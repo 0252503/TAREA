@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  cron-train-model:
+    container_name: train-model
+    image: api-model:latest
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./assets:/app/assets
+      - ./.env:/app/.env
+    env_file:
+      - ./.env
+    environment:
+      - CRON_FILE_NAME=TrainModel
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "50m"
+          max-file: "2"
+
+
+  api:
+    container_name: api
+    image: api-model:latest
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./assets:/app/assets
+      - ./src:/app/src
+    env_file:
+      - ./.env
+    environment:
+      PORT: 8000
+      VIRTUAL_HOST: api.ralejandro.com
+      VIRTUAL_PORT: 8000
+      LETSENCRYPT_HOST: api.ralejandro.com
+      LETSENCRYPT_EMAIL: ralejandrobm@gmail.com
+    ports:
+      - '8000:8000'
+    restart: "always"
+    networks:
+      - web
+    command: [ "python", "app.py", "--app", "ApiApp" ]
+    logging:
+      driver: "json-file"
+      options:
+          max-size: "50m"
+          max-file: "2"
+
+
+networks:
+  web:
+    external: true
